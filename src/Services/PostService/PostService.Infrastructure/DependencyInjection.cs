@@ -1,5 +1,5 @@
+using Infrastructure.MinIO;
 using Microsoft.Extensions.DependencyInjection;
-using Minio;
 using MongoDB.Driver;
 using PostService.Application.Interfaces;
 using PostService.Infrastructure.Persistence;
@@ -13,7 +13,8 @@ public static class DependencyInjection
         this IServiceCollection services,
         string mongoConnectionString,
         string mongoDatabaseName,
-        Action<MinIOOptions> configureMinIO)
+        Action<MinIOOptions> configureMinIO,
+        Action<PostStorageOptions>? configurePostStorage = null)
     {
         // MongoDB
         services.AddSingleton<IMongoClient>(_ => new MongoClient(mongoConnectionString));
@@ -23,26 +24,20 @@ public static class DependencyInjection
             return client.GetDatabase(mongoDatabaseName);
         });
 
-        // MinIO
-        services.Configure(configureMinIO);
-        services.AddSingleton<IMinioClient>(sp =>
-        {
-            var options = new MinIOOptions();
-            configureMinIO(options);
+        // Shared MinIO from Infrastructure
+        services.AddMinIOStorage(configureMinIO);
 
-            var builder = new MinioClient()
-                .WithEndpoint(options.Endpoint)
-                .WithCredentials(options.AccessKey, options.SecretKey);
-
-            if (options.UseSSL)
-                builder = builder.WithSSL();
-
-            return builder.Build();
-        });
+        // Post-specific storage config
+        if (configurePostStorage != null)
+            services.Configure(configurePostStorage);
+        else
+            services.Configure<PostStorageOptions>(_ => { });
 
         // Repositories
         services.AddScoped<IPostRepository, PostRepository>();
-        services.AddScoped<IStorageUrlProvider, MinIOStorageUrlProvider>();
+        
+        // Storage adapter using shared IStorageService
+        services.AddScoped<IStorageUrlProvider, PostStorageUrlProvider>();
 
         return services;
     }

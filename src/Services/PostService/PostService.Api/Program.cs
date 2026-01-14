@@ -1,4 +1,5 @@
 using System.Text;
+using Infrastructure.MinIO;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using PostService.Application.Handlers;
