@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using UserService.Api.Grpc;
 using UserService.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,13 +34,22 @@ var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDB")
 
 builder.Services.AddInfrastructure(mongoConnectionString, "masiu_users");
 
-// Controllers
+// gRPC for inter-service communication
+builder.Services.AddGrpc();
+
+// Controllers (REST API for external clients)
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
+// Middleware
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Map gRPC service (internal communication)
+app.MapGrpcService<UserGrpcService>();
+
+// Map REST controllers (external API via Gateway)
 app.MapControllers();
 
 app.Run();

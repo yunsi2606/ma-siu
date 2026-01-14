@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+option csharp_namespace = "UserService.Grpc";
+
+service UserGrpc {
+  // Get user by ID
+  rpc GetUser (GetUserRequest) returns (UserResponse);
+  
+  // Get user by Google ID (used after auth)
+  rpc GetUserByGoogleId (GetUserByGoogleIdRequest) returns (UserResponse);
+  
+  // Get multiple users by IDs (for batch operations)
+  rpc GetUsers (GetUsersRequest) returns (GetUsersResponse);
+  
+  // Get FCM tokens for notification
+  rpc GetFcmTokens (GetFcmTokensRequest) returns (GetFcmTokensResponse);
+  
+  // Get all active user FCM tokens (for broadcast)
+  rpc GetAllActiveFcmTokens (GetAllActiveFcmTokensRequest) returns (GetFcmTokensResponse);
+}
+
+message GetUserRequest {
+  string user_id = 1;
+}
+
+message GetUserByGoogleIdRequest {
+  string google_id = 1;
+}
+
+message GetUsersRequest {
+  repeated string user_ids = 1;
+}
+
+message GetUsersResponse {
+  repeated UserResponse users = 1;
+}
+
+message UserResponse {
+  string id = 1;
+  string email = 2;
+  string display_name = 3;
+  string avatar_url = 4;
+  string role = 5;
+  int32 total_points = 6;
+  bool found = 7;
+}
+
+message GetFcmTokensRequest {
+  string user_id = 1;
+}
+
+message GetAllActiveFcmTokensRequest {
+  // Empty - gets all active users' FCM tokens
+}
+
+message GetFcmTokensResponse {
+  repeated FcmTokenInfo tokens = 1;
+}
+
+message FcmTokenInfo {
+  string user_id = 1;
+  string token = 2;
+  string device_id = 3;
+  string platform = 4;
+}
