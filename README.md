@@ -1,4 +1,6 @@
-# San-Seal
+# Mã Siu
+
+> **Mã Siu** = Mã Sale viết lái 🎉
 
 Production-grade Voucher & Affiliate Notification Platform.
 
@@ -16,7 +18,7 @@ Production-grade Voucher & Affiliate Notification Platform.
 ## Project Structure
 
 ```
-san-seal/
+ma-siu/
 ├── assets/                     # Static assets
 ├── config/                     # Configuration files
 ├── src/
