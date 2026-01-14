@@ -1,6 +1,6 @@
 # Mã Siu
 
-> **Mã Siu** = Mã Sale viết lái 🎉
+> **Mã Siu**
 
 Production-grade Voucher & Affiliate Notification Platform.
 
