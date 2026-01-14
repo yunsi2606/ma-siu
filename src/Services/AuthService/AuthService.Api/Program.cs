@@ -1,34 +1,27 @@
+using AuthService.Infrastructure;
+using AuthService.Infrastructure.Auth;
+using AuthService.Infrastructure.Google;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Configuration
+builder.Services.Configure<GoogleAuthOptions>(
+    builder.Configuration.GetSection(GoogleAuthOptions.SectionName));
+builder.Services.Configure<JwtOptions>(
+    builder.Configuration.GetSection(JwtOptions.SectionName));
+
+// Infrastructure (MongoDB, Services)
+var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDB")
+    ?? throw new InvalidOperationException("MongoDB connection string not configured");
+
+builder.Services.AddInfrastructure(mongoConnectionString, "masiu_auth");
+
+// Controllers
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-});
+// Middleware
+app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
