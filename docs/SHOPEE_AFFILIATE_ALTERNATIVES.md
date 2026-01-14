@@ -6,7 +6,7 @@ Shopee yêu cầu phải được duyệt để có App ID và Secret Key cho Af
 
 ---
 
-## 🔵 Giải pháp 1: Deep Link (Khuyến nghị)
+## 🔵 Giải pháp 1: Deep Link
 
 Shopee hỗ trợ **Universal Link / Deep Link** không cần API:
 
