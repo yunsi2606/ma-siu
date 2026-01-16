@@ -1,50 +1,29 @@
-using System.Text;
-using Infrastructure.MinIO;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using Common.Configuration;
 using PostService.Application.Handlers;
 using PostService.Infrastructure;
-using PostService.Infrastructure.Storage;
+using MinIOOptions = Common.Configuration.MinIOOptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var secretKey = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret not configured");
+// Shared Configuration (from config/ folder)
+builder.Configuration.AddSharedConfiguration(builder.Environment.EnvironmentName);
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-            ClockSkew = TimeSpan.Zero,
-            RoleClaimType = "role"
-        };
-    });
-
-builder.Services.AddAuthorization();
-
+// JWT Authentication (shared)
+builder.Services.AddSharedJwtAuthentication(builder.Configuration);
 // MediatR (CQRS)
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<CreatePostHandler>());
 
 // Infrastructure
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDB")
     ?? throw new InvalidOperationException("MongoDB connection string not configured");
+var databaseName = builder.Configuration["DatabaseName"] ?? "masiu_posts";
+var storageBucket = builder.Configuration["StorageBucket"] ?? "posts";
 
 builder.Services.AddInfrastructure(
     mongoConnectionString,
-    "masiu_posts",
-    options =>
-    {
-        builder.Configuration.GetSection(MinIOOptions.SectionName).Bind(options);
-    });
+    databaseName,
+    options => builder.Configuration.GetSection(MinIOOptions.SectionName).Bind(options),
+    postStorageOptions => postStorageOptions.BucketName = storageBucket);
 
 // Controllers
 builder.Services.AddControllers();
@@ -56,3 +35,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+

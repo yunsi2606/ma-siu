@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\VoucherService.Application\VoucherService.Application.csproj" />
     <ProjectReference Include="..\VoucherService.Infrastructure\VoucherService.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Common\Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

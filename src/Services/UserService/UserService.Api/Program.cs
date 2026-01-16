@@ -1,38 +1,21 @@
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using Common.Configuration;
 using UserService.Api.Grpc;
 using UserService.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var secretKey = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret not configured");
+// Shared Configuration (from config/ folder)
+builder.Configuration.AddSharedConfiguration(builder.Environment.EnvironmentName);
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-            ClockSkew = TimeSpan.Zero
-        };
-    });
-
-builder.Services.AddAuthorization();
+// JWT Authentication (shared)
+builder.Services.AddSharedJwtAuthentication(builder.Configuration);
 
 // Infrastructure
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDB")
     ?? throw new InvalidOperationException("MongoDB connection string not configured");
+var databaseName = builder.Configuration["DatabaseName"] ?? "masiu_users";
 
-builder.Services.AddInfrastructure(mongoConnectionString, "masiu_users");
+builder.Services.AddInfrastructure(mongoConnectionString, databaseName);
 
 // gRPC for inter-service communication
 builder.Services.AddGrpc();
@@ -42,7 +25,6 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Middleware
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -53,3 +35,4 @@ app.MapGrpcService<UserGrpcService>();
 app.MapControllers();
 
 app.Run();
+
