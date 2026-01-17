@@ -1,21 +1,21 @@
-using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
+using NotificationService.Grpc;
 using Quartz;
 
 namespace TaskService.Jobs;
 
 /// <summary>
-/// Job to send expiring voucher notifications.
+/// Job to send expiring voucher notifications via gRPC.
 /// Runs every 6 hours, notifies users about vouchers expiring within 24 hours.
 /// </summary>
 [DisallowConcurrentExecution]
 public class VoucherExpiringNotificationJob(
     ILogger<VoucherExpiringNotificationJob> logger,
-    IHttpClientFactory httpClientFactory)
+    IHttpClientFactory httpClientFactory,
+    NotificationGrpc.NotificationGrpcClient notificationClient)
     : IJob
 {
     private readonly HttpClient _voucherClient = httpClientFactory.CreateClient("VoucherService");
-    private readonly HttpClient _notificationClient = httpClientFactory.CreateClient("NotificationService");
 
     public async Task Execute(IJobExecutionContext context)
     {
@@ -23,7 +23,7 @@ public class VoucherExpiringNotificationJob(
 
         try
         {
-            // Get expiring vouchers
+            // Get expiring vouchers (still HTTP since VoucherService has no gRPC)
             var response = await _voucherClient.GetAsync("/api/vouchers/expiring?hoursAhead=24", context.CancellationToken);
             
             if (!response.IsSuccessStatusCode)
@@ -32,28 +32,27 @@ public class VoucherExpiringNotificationJob(
                 return;
             }
 
-            // Send broadcast notification for expiring vouchers
-            var notifyRequest = new
+            // Send broadcast notification via gRPC
+            var request = new SendToTopicRequest
             {
                 Topic = "voucher-alerts",
                 Type = "VoucherExpiring",
                 Title = "⚠️ Vouchers sắp hết hạn!",
-                Body = "Có voucher sẽ hết hạn trong 24 giờ tới. Mở app để xem!",
-                Data = new Dictionary<string, string>
-                {
-                    ["action"] = "open_expiring"
-                }
+                Body = "Có voucher sẽ hết hạn trong 24 giờ tới. Mở app để xem!"
             };
+            request.Data.Add("action", "open_expiring");
 
-            var notifyResponse = await _notificationClient.PostAsJsonAsync("/api/notifications/send-topic", notifyRequest, context.CancellationToken);
+            var grpcResponse = await notificationClient.SendToTopicAsync(
+                request,
+                cancellationToken: context.CancellationToken);
 
-            if (notifyResponse.IsSuccessStatusCode)
+            if (grpcResponse.Success)
             {
-                logger.LogInformation("VoucherExpiringNotificationJob completed successfully");
+                logger.LogInformation("VoucherExpiringNotificationJob completed successfully via gRPC");
             }
             else
             {
-                logger.LogWarning("Failed to send notification: {Status}", notifyResponse.StatusCode);
+                logger.LogWarning("Notification failed: {Message}", grpcResponse.Message);
             }
         }
         catch (Exception ex)

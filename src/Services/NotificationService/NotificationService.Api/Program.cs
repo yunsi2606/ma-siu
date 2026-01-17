@@ -1,4 +1,5 @@
 using Common.Configuration;
+using NotificationService.Api.Services;
 using NotificationService.Infrastructure;
 using FirebaseOptions = Common.Configuration.FirebaseOptions;
 
@@ -26,10 +27,17 @@ builder.Services.AddInfrastructure(mongoConnectionString, databaseName, redisCon
 // Controllers
 builder.Services.AddControllers();
 
+// gRPC
+builder.Services.AddGrpc();
+
 var app = builder.Build();
 
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+// Map gRPC service
+app.MapGrpcService<NotificationGrpcService>();
+
 app.Run();
+

@@ -7,8 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Grpc.Net.Client" Version="2.67.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.29.3" />
+    <PackageReference Include="Grpc.Tools" Version="2.67.0" PrivateAssets="All" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="..\..\Services\NotificationService\NotificationService.Api\Protos\notification.proto" GrpcServices="Client" Link="Protos\notification.proto" />
   </ItemGroup>
 
 </Project>

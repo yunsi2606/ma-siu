@@ -1,21 +1,19 @@
-using System.Net.Http.Json;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using NotificationService.Grpc;
 using TaskService.Consumers.Events;
 
 namespace TaskService.Consumers;
 
 /// <summary>
 /// Consumes VoucherCreatedEvent from RabbitMQ.
-/// Triggers notification about new voucher.
+/// Triggers notification about new voucher via gRPC.
 /// </summary>
 public class VoucherCreatedConsumer(
     ILogger<VoucherCreatedConsumer> logger,
-    IHttpClientFactory httpClientFactory)
+    NotificationGrpc.NotificationGrpcClient notificationClient)
     : IConsumer<VoucherCreatedEvent>
 {
-    private readonly HttpClient _notificationClient = httpClientFactory.CreateClient("NotificationService");
-
     public async Task Consume(ConsumeContext<VoucherCreatedEvent> context)
     {
         var evt = context.Message;
@@ -23,26 +21,29 @@ public class VoucherCreatedConsumer(
 
         try
         {
-            var notifyRequest = new
+            var request = new SendToTopicRequest
             {
                 Topic = "voucher-alerts",
                 Type = "NewVoucher",
                 Title = $"🎁 Mã giảm giá mới từ {evt.Platform}!",
-                Body = $"Code: {evt.Code} - Hết hạn: {evt.ExpiresAt:dd/MM/yyyy HH:mm}",
-                Data = new Dictionary<string, string>
-                {
-                    ["voucherId"] = evt.VoucherId,
-                    ["voucherCode"] = evt.Code,
-                    ["platform"] = evt.Platform
-                }
+                Body = $"Code: {evt.Code} - Hết hạn: {evt.ExpiresAt:dd/MM/yyyy HH:mm}"
             };
+            request.Data.Add("voucherId", evt.VoucherId);
+            request.Data.Add("voucherCode", evt.Code);
+            request.Data.Add("platform", evt.Platform);
 
-            await _notificationClient.PostAsJsonAsync(
-                "/api/notifications/send-topic",
-                notifyRequest,
-                context.CancellationToken);
+            var response = await notificationClient.SendToTopicAsync(
+                request,
+                cancellationToken: context.CancellationToken);
 
-            logger.LogInformation("VoucherCreatedEvent processed successfully");
+            if (response.Success)
+            {
+                logger.LogInformation("VoucherCreatedEvent processed successfully via gRPC");
+            }
+            else
+            {
+                logger.LogWarning("VoucherCreatedEvent notification failed: {Message}", response.Message);
+            }
         }
         catch (Exception ex)
         {

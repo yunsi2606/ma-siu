@@ -1,22 +1,19 @@
-using System.Net.Http.Json;
 using MassTransit;
 using Microsoft.Extensions.Logging;
+using NotificationService.Grpc;
 using TaskService.Consumers.Events;
 
 namespace TaskService.Consumers;
 
 /// <summary>
 /// Consumes PostPublishedEvent from RabbitMQ.
-/// Triggers notification to followers.
+/// Triggers notification to followers via gRPC.
 /// </summary>
 public class PostPublishedConsumer(
     ILogger<PostPublishedConsumer> logger,
-    IHttpClientFactory httpClientFactory)
+    NotificationGrpc.NotificationGrpcClient notificationClient)
     : IConsumer<PostPublishedEvent>
 {
-    private readonly HttpClient _notificationClient = httpClientFactory.CreateClient("NotificationService");
-    private readonly HttpClient _userClient = httpClientFactory.CreateClient("UserService");
-
     public async Task Consume(ConsumeContext<PostPublishedEvent> context)
     {
         var evt = context.Message;
@@ -24,27 +21,28 @@ public class PostPublishedConsumer(
 
         try
         {
-            // TODO: Get author followers from UserService (gRPC)
-            // For now, send to topic
-            var notifyRequest = new
+            var request = new SendToTopicRequest
             {
                 Topic = "new-posts",
                 Type = "NewPost",
-                Title = $"📱 Bài viết mới!",
-                Body = evt.Title.Length > 50 ? evt.Title[..47] + "..." : evt.Title,
-                Data = new Dictionary<string, string>
-                {
-                    ["postId"] = evt.PostId,
-                    ["authorId"] = evt.AuthorId
-                }
+                Title = "📱 Bài viết mới!",
+                Body = evt.Title.Length > 50 ? evt.Title[..47] + "..." : evt.Title
             };
+            request.Data.Add("postId", evt.PostId);
+            request.Data.Add("authorId", evt.AuthorId);
 
-            await _notificationClient.PostAsJsonAsync(
-                "/api/notifications/send-topic",
-                notifyRequest,
-                context.CancellationToken);
+            var response = await notificationClient.SendToTopicAsync(
+                request,
+                cancellationToken: context.CancellationToken);
 
-            logger.LogInformation("PostPublishedEvent processed successfully");
+            if (response.Success)
+            {
+                logger.LogInformation("PostPublishedEvent processed successfully via gRPC");
+            }
+            else
+            {
+                logger.LogWarning("PostPublishedEvent notification failed: {Message}", response.Message);
+            }
         }
         catch (Exception ex)
         {

@@ -1,4 +1,6 @@
+using Grpc.Net.Client;
 using MassTransit;
+using NotificationService.Grpc;
 using Quartz;
 using TaskService.Consumers;
 using TaskService.Jobs;
@@ -17,7 +19,7 @@ if (!string.IsNullOrEmpty(configPath))
 }
 
 // =============================================================================
-// HTTP Clients for service-to-service calls
+// HTTP Clients (for services without gRPC)
 // =============================================================================
 builder.Services.AddHttpClient("VoucherService", client =>
 {
@@ -25,15 +27,19 @@ builder.Services.AddHttpClient("VoucherService", client =>
     client.DefaultRequestHeaders.Add("X-Internal-Api-Key", "masiu-internal-key");
 });
 
-builder.Services.AddHttpClient("NotificationService", client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration["Services:NotificationService"] ?? "http://localhost:5106");
-    client.DefaultRequestHeaders.Add("X-Internal-Api-Key", "masiu-internal-key");
-});
-
 builder.Services.AddHttpClient("UserService", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["Services:UserService"] ?? "http://localhost:5102");
+});
+
+// =============================================================================
+// gRPC Clients
+// =============================================================================
+var notificationServiceUrl = builder.Configuration["Services:NotificationServiceGrpc"] ?? "http://localhost:5107";
+builder.Services.AddSingleton(sp =>
+{
+    var channel = GrpcChannel.ForAddress(notificationServiceUrl);
+    return new NotificationGrpc.NotificationGrpcClient(channel);
 });
 
 // =============================================================================
