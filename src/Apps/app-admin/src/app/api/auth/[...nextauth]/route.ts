@@ -1,31 +1,59 @@
 import NextAuth, { NextAuthOptions } from 'next-auth'
-import GoogleProvider from 'next-auth/providers/google'
+import CredentialsProvider from 'next-auth/providers/credentials'
+
+// Admin credentials (in production, these should be in a database)
+const ADMIN_USERS = [
+    { id: '1', username: 'admin', password: 'admin123', name: 'Admin', email: 'admin@masiu.vn' },
+]
 
 export const authOptions: NextAuthOptions = {
     providers: [
-        GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID ?? '',
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
-        }),
+        CredentialsProvider({
+            name: 'Credentials',
+            credentials: {
+                username: { label: 'Username', type: 'text' },
+                password: { label: 'Password', type: 'password' }
+            },
+            async authorize(credentials) {
+                if (!credentials?.username || !credentials?.password) {
+                    return null
+                }
+
+                const user = ADMIN_USERS.find(
+                    u => u.username === credentials.username && u.password === credentials.password
+                )
+
+                if (user) {
+                    return {
+                        id: user.id,
+                        name: user.name,
+                        email: user.email,
+                    }
+                }
+                return null
+            }
+        })
     ],
+    session: {
+        strategy: 'jwt',
+        maxAge: 24 * 60 * 60, // 24 hours
+    },
+    pages: {
+        signIn: '/login',
+    },
     callbacks: {
-        async jwt({ token, account }) {
-            if (account) {
-                token.accessToken = account.access_token
-                token.idToken = account.id_token
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id
             }
             return token
         },
         async session({ session, token }) {
-            return {
-                ...session,
-                accessToken: token.accessToken,
-                idToken: token.idToken,
+            if (session.user) {
+                (session.user as any).id = token.id
             }
+            return session
         },
-    },
-    pages: {
-        signIn: '/login',
     },
 }
 
