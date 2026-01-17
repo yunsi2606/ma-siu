@@ -1,0 +1,22 @@
+# Cloudflare Tunnel configuration
+# This file configures cloudflared to expose services through Cloudflare Tunnel
+
+tunnel: masiu-tunnel
+credentials-file: /etc/cloudflared/credentials.json
+
+ingress:
+  # API Gateway
+  - hostname: api.masiu.vn
+    service: http://nginx:80
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+
+  # Admin Dashboard
+  - hostname: admin.masiu.vn
+    service: http://nginx:80
+    originRequest:
+      noTLSVerify: true
+
+  # Catch-all rule (required)
+  - service: http_status:404
