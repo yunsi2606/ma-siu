@@ -1,4 +1,4 @@
-import { FileText, Ticket, Eye, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { FileText, Ticket, Eye, TrendingUp, ArrowUpRight, ArrowDownRight, BarChart3 } from 'lucide-react'
 
 const stats = [
     {
@@ -99,8 +99,8 @@ export default function DashboardPage() {
                                 className="flex items-center gap-4 p-4 rounded-xl bg-slate-800/30 hover:bg-slate-800/50 transition-colors cursor-pointer group"
                             >
                                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${activity.type === 'post' ? 'bg-blue-500/20 text-blue-400' :
-                                        activity.type === 'voucher' ? 'bg-amber-500/20 text-amber-400' :
-                                            'bg-emerald-500/20 text-emerald-400'
+                                    activity.type === 'voucher' ? 'bg-amber-500/20 text-amber-400' :
+                                        'bg-emerald-500/20 text-emerald-400'
                                     }`}>
                                     {activity.type === 'post' && <FileText size={18} />}
                                     {activity.type === 'voucher' && <Ticket size={18} />}

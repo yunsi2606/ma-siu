@@ -52,7 +52,11 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
 /// Auth state notifier
 class AuthNotifier extends StateNotifier<AuthState> {
   final ApiClient _apiClient;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  // Web Client ID from google-services.json (client_type: 3)
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    serverClientId:
+        '288811663566-ojkmg31vs1kf1bu975qrjp97n9he5tr6.apps.googleusercontent.com',
+  );
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   static const _accessTokenKey = 'access_token';

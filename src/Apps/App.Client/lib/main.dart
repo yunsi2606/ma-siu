@@ -9,17 +9,27 @@ import 'shared/theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp();
+  // Initialize Firebase (optional - will work without it)
+  bool firebaseInitialized = false;
+  try {
+    await Firebase.initializeApp();
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    firebaseInitialized = true;
+    debugPrint('Firebase initialized successfully');
+  } catch (e) {
+    debugPrint('Firebase not configured: $e');
+    debugPrint('App will continue without push notifications');
+  }
 
-  // Setup background message handler
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
-  runApp(const ProviderScope(child: MaSiuApp()));
+  runApp(
+    ProviderScope(child: MaSiuApp(firebaseInitialized: firebaseInitialized)),
+  );
 }
 
 class MaSiuApp extends ConsumerStatefulWidget {
-  const MaSiuApp({super.key});
+  final bool firebaseInitialized;
+
+  const MaSiuApp({super.key, required this.firebaseInitialized});
 
   @override
   ConsumerState<MaSiuApp> createState() => _MaSiuAppState();
@@ -29,10 +39,11 @@ class _MaSiuAppState extends ConsumerState<MaSiuApp> {
   @override
   void initState() {
     super.initState();
-    // Initialize notifications after first frame
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(notificationServiceProvider).initialize();
-    });
+    if (widget.firebaseInitialized) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(notificationServiceProvider).initialize();
+      });
+    }
   }
 
   @override
