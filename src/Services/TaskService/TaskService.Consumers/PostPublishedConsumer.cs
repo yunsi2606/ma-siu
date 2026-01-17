@@ -1,7 +1,7 @@
+using EventContracts;
 using MassTransit;
+using MaSiu.Grpc.Notification;
 using Microsoft.Extensions.Logging;
-using NotificationService.Grpc;
-using TaskService.Consumers.Events;
 
 namespace TaskService.Consumers;
 

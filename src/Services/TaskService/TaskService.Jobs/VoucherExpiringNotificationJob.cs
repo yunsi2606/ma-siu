@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging;
-using NotificationService.Grpc;
+using MaSiu.Grpc.Notification;
 using Quartz;
 
 namespace TaskService.Jobs;

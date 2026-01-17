@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="..\..\NotificationService\NotificationService.Api\Protos\notification.proto" GrpcServices="Client" Link="Protos\notification.proto" />
+    <Protobuf Include="..\..\..\Shared\Protos\notification.proto" GrpcServices="Client" Link="Protos\notification.proto" />
   </ItemGroup>
 
   <ItemGroup>

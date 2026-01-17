@@ -1,7 +1,7 @@
 using Grpc.Core;
+using MaSiu.Grpc.Notification;
 using NotificationService.Application.Services;
 using NotificationService.Domain.Entities;
-using NotificationService.Grpc;
 
 namespace NotificationService.Api.Services;
 

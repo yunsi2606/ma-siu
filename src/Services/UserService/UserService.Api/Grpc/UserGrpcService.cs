@@ -1,6 +1,6 @@
 using Grpc.Core;
+using MaSiu.Grpc.User;
 using UserService.Application.Interfaces;
-using UserService.Grpc;
 
 namespace UserService.Api.Grpc;
 

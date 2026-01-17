@@ -1,6 +1,6 @@
 using Grpc.Net.Client;
 using MassTransit;
-using NotificationService.Grpc;
+using MaSiu.Grpc.Notification;
 using Quartz;
 using TaskService.Consumers;
 using TaskService.Jobs;
@@ -101,7 +101,7 @@ builder.Services.AddMassTransit(x =>
 var host = builder.Build();
 
 Console.WriteLine("========================================");
-Console.WriteLine("  TaskService (JobOrchestrator) Started");
+Console.WriteLine("  TaskService (Worker) Started");
 Console.WriteLine("========================================");
 Console.WriteLine("  Quartz Jobs:");
 Console.WriteLine("    - VoucherExpiryJob: Every hour");

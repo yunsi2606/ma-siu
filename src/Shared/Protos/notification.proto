@@ -1,9 +1,10 @@
 syntax = "proto3";
 
-option csharp_namespace = "NotificationService.Grpc";
+option csharp_namespace = "MaSiu.Grpc.Notification";
 
 package notification;
 
+// Notification gRPC Service
 service NotificationGrpc {
   // Send notification to specific user
   rpc SendNotification (SendNotificationRequest) returns (SendNotificationResponse);

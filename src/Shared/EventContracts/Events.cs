@@ -1,21 +1,49 @@
 namespace EventContracts;
 
+// Post Events
+
 /// <summary>
 /// Published when a new post is created by admin.
-/// Triggers push notification to all users.
 /// </summary>
 public record PostCreatedEvent
 {
     public required string PostId { get; init; }
+    public required string AuthorId { get; init; }
     public required string Title { get; init; }
     public required string Platform { get; init; }
-    public required string? ImageUrl { get; init; }
+    public string? ImageUrl { get; init; }
     public required DateTime CreatedAt { get; init; }
 }
 
 /// <summary>
+/// Published when a post is published (made visible to users).
+/// Triggers push notification.
+/// </summary>
+public record PostPublishedEvent
+{
+    public required string PostId { get; init; }
+    public required string AuthorId { get; init; }
+    public required string Title { get; init; }
+    public string? AffiliateUrl { get; init; }
+    public required DateTime PublishedAt { get; init; }
+}
+
+// Voucher Events
+
+/// <summary>
+/// Published when a new voucher is created.
+/// </summary>
+public record VoucherCreatedEvent
+{
+    public required string VoucherId { get; init; }
+    public required string Code { get; init; }
+    public required string Platform { get; init; }
+    public required DateTime ExpiresAt { get; init; }
+}
+
+/// <summary>
 /// Published when a voucher is about to expire.
-/// Used by Quartz job to send reminders.
+/// Used by scheduled job to send reminders.
 /// </summary>
 public record VoucherExpiringEvent
 {
@@ -25,6 +53,32 @@ public record VoucherExpiringEvent
     public required int RemainingPercent { get; init; }
     public required DateTime ExpiresAt { get; init; }
 }
+
+// User Events
+
+/// <summary>
+/// Published when a user signs in or registers.
+/// </summary>
+public record UserAuthenticatedEvent
+{
+    public required string UserId { get; init; }
+    public required string Email { get; init; }
+    public required bool IsNewUser { get; init; }
+    public required DateTime AuthenticatedAt { get; init; }
+}
+
+/// <summary>
+/// Published when a new user registers.
+/// </summary>
+public record UserRegisteredEvent
+{
+    public required string UserId { get; init; }
+    public required string Email { get; init; }
+    public required string DisplayName { get; init; }
+    public required DateTime RegisteredAt { get; init; }
+}
+
+// Task & Points Events
 
 /// <summary>
 /// Published when a user completes a task.
@@ -50,6 +104,8 @@ public record PointsEarnedEvent
     public required DateTime EarnedAt { get; init; }
 }
 
+// Affiliate Events
+
 /// <summary>
 /// Published when an affiliate link is clicked.
 /// </summary>
@@ -60,15 +116,4 @@ public record AffiliateLinkClickedEvent
     public required string Platform { get; init; }
     public required string AffiliateUrl { get; init; }
     public required DateTime ClickedAt { get; init; }
-}
-
-/// <summary>
-/// Published when a user signs in or registers.
-/// </summary>
-public record UserAuthenticatedEvent
-{
-    public required string UserId { get; init; }
-    public required string Email { get; init; }
-    public required bool IsNewUser { get; init; }
-    public required DateTime AuthenticatedAt { get; init; }
 }

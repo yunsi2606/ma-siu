@@ -1,7 +1,10 @@
 syntax = "proto3";
 
-option csharp_namespace = "UserService.Grpc";
+option csharp_namespace = "MaSiu.Grpc.User";
 
+package user;
+
+// User gRPC Service
 service UserGrpc {
   // Get user by ID
   rpc GetUser (GetUserRequest) returns (UserResponse);
