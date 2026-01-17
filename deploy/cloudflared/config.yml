@@ -6,14 +6,14 @@ credentials-file: /etc/cloudflared/credentials.json
 
 ingress:
   # API Gateway
-  - hostname: api.masiu.vn
+  - hostname: api-masiu.nhatcuong.io.vn
     service: http://nginx:80
     originRequest:
       noTLSVerify: true
       connectTimeout: 30s
 
   # Admin Dashboard
-  - hostname: admin.masiu.vn
+  - hostname: admin-masiu.nhatcuong.io.vn
     service: http://nginx:80
     originRequest:
       noTLSVerify: true

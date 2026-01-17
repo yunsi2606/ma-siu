@@ -33,8 +33,8 @@ This creates a credentials file at `~/.cloudflared/<TUNNEL_ID>.json`
 
 ### 3. Configure DNS
 ```bash
-cloudflared tunnel route dns masiu-tunnel api.masiu.vn
-cloudflared tunnel route dns masiu-tunnel admin.masiu.vn
+cloudflared tunnel route dns masiu-tunnel api-masiu.nhatcuong.io.vn
+cloudflared tunnel route dns masiu-tunnel admin-masiu.nhatcuong.io.vn
 ```
 
 ### 4. Copy configuration
@@ -67,5 +67,5 @@ cloudflared:
 ## Verify
 ```bash
 cloudflared tunnel info masiu-tunnel
-curl https://api.masiu.vn/health
+curl https://api-masiu.nhatcuong.io.vn/health
 ```
