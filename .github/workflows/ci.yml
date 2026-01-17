@@ -1,1 +1,103 @@
+# name: Build and Test
 
+# on:
+#   push:
+#     branches: [main, develop]
+#   pull_request:
+#     branches: [main]
+
+# env:
+#   DOTNET_VERSION: '9.0.x'
+#   NODE_VERSION: '20'
+
+# jobs:
+#   # Backend Services Build & Test
+#   backend:
+#     runs-on: ubuntu-latest
+    
+#     services:
+#       mongodb:
+#         image: mongo:7.0
+#         ports:
+#           - 27017:27017
+#       redis:
+#         image: redis:7.4-alpine
+#         ports:
+#           - 6379:6379
+
+#     steps:
+#       - uses: actions/checkout@v4
+
+#       - name: Setup .NET
+#         uses: actions/setup-dotnet@v4
+#         with:
+#           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+#       - name: Restore dependencies
+#         run: dotnet restore MaSiu.sln
+
+#       - name: Build
+#         run: dotnet build MaSiu.sln --no-restore -c Release
+
+#       - name: Test
+#         run: dotnet test MaSiu.sln --no-build -c Release --verbosity normal
+#         env:
+#           MONGODB_CONNECTION: mongodb://localhost:27017
+#           REDIS_CONNECTION: localhost:6379
+
+#   # Admin Dashboard Build
+#   admin:
+#     runs-on: ubuntu-latest
+#     defaults:
+#       run:
+#         working-directory: src/Apps/app-admin
+
+#     steps:
+#       - uses: actions/checkout@v4
+
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: ${{ env.NODE_VERSION }}
+#           cache: 'npm'
+#           cache-dependency-path: src/Apps/app-admin/package-lock.json
+
+#       - name: Install dependencies
+#         run: npm ci
+
+#       - name: Lint
+#         run: npm run lint
+
+#       - name: Build
+#         run: npm run build
+
+#       - name: Run E2E tests
+#         run: npx playwright install --with-deps && npx playwright test
+#         continue-on-error: true
+
+#   # Flutter App Build
+#   flutter:
+#     runs-on: ubuntu-latest
+#     defaults:
+#       run:
+#         working-directory: src/Apps/App.Client
+
+#     steps:
+#       - uses: actions/checkout@v4
+
+#       - name: Setup Flutter
+#         uses: subosito/flutter-action@v2
+#         with:
+#           flutter-version: '3.27.1'
+#           channel: 'stable'
+
+#       - name: Get dependencies
+#         run: flutter pub get
+
+#       - name: Analyze
+#         run: flutter analyze
+#         continue-on-error: true
+
+#       - name: Build APK
+#         run: flutter build apk --release
+#         continue-on-error: true
